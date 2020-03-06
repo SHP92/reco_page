@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Page from './page';
@@ -10,7 +10,6 @@ import { useQuery } from '@apollo/react-hooks';
 
 export default function Detail(){
     const img = process.env.PUBLIC_URL;
-    const [swiper, setSwiper] = useState(null);
     const { menu, country, lang, id } = useParams();
     const GET_DETAIL = gql`
         query {
@@ -45,17 +44,19 @@ export default function Detail(){
             <Body>
                 <InsideBody>
                     <Block>
-                        <Img src={DATA.icon} width={100} height={100}/>
+                        <img src={DATA.icon} alt='icon' style={{width:100, height:100, borderRadius:5}}/>
                         <Box>
-                            <Title> {removeTags(DATA.title)} </Title>
-                            <div> ⭐️ {DATA.scoreText} </div>
-                            <div> 🚀 {DATA.installs} </div>
+                            <div style={{fontWeight:'bold'}}> {removeTags(DATA.title)} </div>
+                            <div style={{display:'flex', flexDirection:'column'}}>
+                                <span> ⭐️ {DATA.scoreText} </span>
+                                <span> 🚀 {DATA.installs} </span>
+                            </div>
                         </Box>
                     </Block>
                     <Line/>
                     <Block>
                         <div>
-                            <Summary> {removeTags(DATA.summary)} </Summary>
+                            <div style={{marginBottom: 5, fontSize: 14}}> {removeTags(DATA.summary)} </div>
                             {/* <Desc> {desc.split('\r').map((i, key) => (
                                 <div key={key}>{i}</div>
                             ))} </Desc> */}
@@ -65,26 +66,38 @@ export default function Detail(){
                         <Comments>
                             {COMMENT.map(i => (
                                 <Comment>
-                                    <img src={`${img}images/chat.png`} style={{ width:20}}/>
-                                    {console.log(i)}
-                                    <div> {i.userName} </div>
-                                    <div> {i.text} </div>
-                                    <div> ⭐️ {i.scoreText} </div>
-                                    <div> 👍 {i.thumbsUp}</div>
+                                    <Info>
+                                        <div style={{display:'flex', flexDirection:'row'}}>
+                                            <img src={`${img}images/chat.png`} alt={i} style={{ width:20, paddingRight:7}}/>
+                                            <span style={{paddingRight:7, fontWeight:'bold'}}> {i.userName.substring(0,10)} </span>
+                                        </div>
+                                        <span> 👍 {i.thumbsUp}</span>
+                                    </Info>
+                                    <div style={{backgroundColor:'#F4F4FF', padding:5}}> 
+                                        <div style={{display:'flex', fontSize:12, justifyContent:'space-between'}}>
+                                            <div> 
+                                                {Array.from({length: Number(i.scoreText)}).map(i=>(
+                                                    '⭐️'
+                                                ))}
+                                            </div>
+                                            <div style={{color:'darkgrey'}}> {i.date.split('T')[0]} </div>
+                                        </div>
+                                        {(i.text.length > 150) ? `${i.text.substring(0,150)}...` :  i.text} 
+                                    </div>
                                 </Comment>
                             ))}
                         </Comments>
                     </Block>
-                    <Block>
+                    {/* <Block>
                         <Write>
                             my review ✏️ 
                         </Write>
-                    </Block>
+                    </Block> */}
                     <Block>
                         <List to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none' }}>
                             🎁 list
                         </List>
-                        <Download onClick={()=>window.open(DATA.url, '_blank')}>
+                        <Download onClick={()=>window.open(removeTags(DATA.url), '_blank')}>
                             download 🚀
                         </Download>
                     </Block>
@@ -133,20 +146,9 @@ const Block = styled.span`
 const Box = styled.span`
     display : flex;
     flex-direction: column;
+    justify-content: space-between;
     margin-left: 0.5em;
     width: 70vw;
-`;
-const Title = styled.div`
-    font-weight: bold;
-    margin-bottom: 0.5em;
-`;
-const Summary = styled.div`
-    margin-bottom: 0.5em;
-    font-size: 0.9em;
-`;
-const Img = styled.img`
-    display: flex;
-    border-radius: 0.5em;
 `;
 const Desc = styled.div`
     font-size: 0.9em;
@@ -159,9 +161,10 @@ const Comments = styled.div`
     flex-direction: column;
     width: 100%;
     border: 1px solid lightgray;
-    padding: 0.5em;
     overflow-y: scroll;
     height: 40vh;
+    padding: 0.5em;
+    padding-top: 0;
 `;
 const Comment = styled.div`
     display: flex;
@@ -169,11 +172,15 @@ const Comment = styled.div`
     width: 100%;
     font-size: 0.9em;
     line-height: 1.5em;
+    padding-bottom: 0.5em;
+    padding-top: 0.5em;
+    border-bottom: 1px solid lightgray;
 `;
-const Nav = styled.div`
+const Info = styled.div`
     display: flex;
-    align-items: center;
-    /* padding: 0.5em; */
+    flex-direction: row;
+    padding-bottom: 0.5em;
+    justify-content: space-between;
 `;
 const Button = styled.div`
     justify-content: center;
