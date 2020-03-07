@@ -1,6 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 import GlobalStyle from '../gloablstyle';
+import { Card, Image, Icon } from 'semantic-ui-react'
+import { Link } from 'react-router-dom';
 
 import Loading from './loading';
 import Error from './error';
@@ -9,39 +10,30 @@ export default function Page( {menu, state} ){
     return(
         <div> 
             <GlobalStyle />
-            <Header>
-                {state ? menu.toUpperCase() : "Oops!"} 
-            </Header>
-            <Body>
-                {state ? <Loading /> : <Error />}
-            </Body>  
+            <Card style={{width:'100%'}}>
+                <Card.Content>
+                    <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    {state? null : 
+                        <Link to="/" style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5 }}>
+                            <Image fluid label={{
+                                color: 'teal',
+                                content: 'HOME',
+                                icon: 'home',
+                                ribbon: true,
+                            }}/>
+                        </Link>
+                    }
+                        {state ? 
+                            <div style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}>
+                                <Icon name={menu} color='grey'/>
+                                <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()} </div>
+                            </div> : "Oops!"} 
+                    </Card.Header>
+                </Card.Content>
+                <Card.Content style={{height:document.body.clientHeight*0.95, display:'flex', flexDirection:'column', justifyContent:'center'}}>
+                    {state ? <Loading /> : <Error />}
+                </Card.Content>
+            </Card>
         </div>
     )
 }
-
-const Header = styled.span`
-    display: flex;
-    border: 8px solid #5e6fa3;
-    background-color: white;
-    margin: 1em;
-    margin-bottom: 0.7em;
-    box-shadow: 3px 5px 1px #F79109;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #5e6fa3;
-    padding: 0.5em;
-`;
-const Body = styled.span`
-    height: 85vh;
-    overflow-y: scroll;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-    box-shadow: 3px 5px 1px #F79109;
-    margin-top: 1.5em;
-    margin-right: 1.5em;
-    margin-left: 1.5em;
-`;

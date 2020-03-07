@@ -1,108 +1,72 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import Popup from './popup';
 import GlobalStyle from '../gloablstyle';
 import { COUNTRY, LANG } from '../info';
+import { Dropdown, Step, Icon } from 'semantic-ui-react';
+import 'semantic-ui-css/semantic.min.css';
 
 const MENU = ['translate', 'wifi', 'map', 'food', 'hotel', 'travel'];
 
 export default function Home(){
-    const img = process.env.PUBLIC_URL;
-    const [isOpen, setIsOpen] = useState(false);
-    const [country, setCountry] = useState(Object.keys(COUNTRY)[0]);
-    const [lang, setLang] = useState(Object.keys(LANG)[0]);
-
-    const _toggle = () => {
-        setIsOpen(isOpen ? false : true);
-    }
+    const [country, setCountry] = useState(COUNTRY[0].value);
+    const [lang, setLang] = useState('ko'); // country처럼 변경
+    const [menu, setMenu] = useState('food'); // country처럼 변경
 
     return (
         <div>
             <GlobalStyle/>
-            {isOpen ? <Popup _setCountry={setCountry} _setLang={setLang}/> : null}
-            <Header onClick={_toggle}>
-                {country.toUpperCase()}
-            </Header>
-            <Body onClick={()=>setIsOpen(false)}>
-                {MENU.map(m => (
-                    <Div
-                        to={{pathname: `/${m}/${COUNTRY[country]}/${LANG[lang]}`}} 
-                        style={{ textDecoration: 'none' }}
-                    >
-                        <Content>
-                            <Img>
-                                <img src={`${img}images/${m}.png`} alt={m} style={{ width:50 }}/>
-                            </Img>
-                            <Card >
-                                <Title>{m.toUpperCase()}</Title>
-                            </Card>
-                            <img src={`${img}images/step.png`} alt={`${m}_step`} style={{ width:25 }}/>
-                        </Content>
-                    </Div>
-                ))}
-            </Body>
+            <div>
+                <Step.Group style={{display:'flex'}}>
+                    <Step active>
+                        <Icon name='globe'/>
+                        <Step.Content style={{marginBottom:10}}>
+                            <Step.Title> COUNTRY </Step.Title>
+                            <Step.Description> step 1 </Step.Description>
+                        </Step.Content>
+                        <Dropdown
+                            placeholder={COUNTRY[0].text}
+                            fluid
+                            selection
+                            search
+                            options={COUNTRY}
+                            onChange={(e, {value}) => setCountry(value)}
+                        />
+                    </Step>
+                    <Step disabled>
+                        <Icon name='language'/>
+                        <Step.Content style={{marginBottom:10}}>
+                            <Step.Title> LANGUAGE </Step.Title>
+                            <Step.Description> step 2 </Step.Description>
+                        </Step.Content>
+                        <Dropdown
+                            placeholder={COUNTRY[0].text} // language로 변경
+                            fluid
+                            selection
+                            search
+                            options={COUNTRY} // language로 변경
+                            onChange={(e, {value}) => setLang(value)}
+                        />
+                    </Step>
+                    <Step disabled>
+                        <Icon name='paper plane'/>
+                        <Step.Content style={{marginBottom:10}}>
+                            <Step.Title> ??? </Step.Title>
+                            <Step.Description> step3 </Step.Description>
+                        </Step.Content>
+                        <Dropdown
+                            placeholder={COUNTRY[0].text} // menu 구조 변경
+                            fluid
+                            selection
+                            search
+                            options={COUNTRY} // menu 구조 변경
+                            onChange={(e, {value}) => setMenu(value)}
+                        />
+                    </Step>
+                </Step.Group>
+                <Link to={`/${menu}/${country}/${lang}`}>
+                    test
+                </Link>
+            </div>
         </div>
     );
 }
-
-const Header = styled.span`
-    display: flex;
-    border: 8px solid #5e6fa3;
-    background-color: white;
-    margin: 1em;
-    margin-bottom: 0.7em;
-    box-shadow: 3px 5px 1px #F79109;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #5e6fa3;
-    padding: 0.5em;
-`;
-const Body = styled.div`
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-    padding: 0.5em;
-    box-shadow: 3px 5px 1px #F79109;
-    margin-top: 1.5em;
-    margin-right: 1.5em;
-    margin-left: 1.5em;
-    /* height: 80vh; */
-`;
-const Div = styled(Link)`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 0.5em;
-    padding-bottom: 0.8em;
-    border-bottom: 1px solid lightgray;
-`;
-const Content = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-`;
-const Card = styled.div`
-    display: flex;
-    background-color: white;
-    border-radius: 0.5em;
-    padding: 0.5em;
-    width: 100%;
-    /* justify-content: center; */
-`;
-const Title = styled.div`
-    display: flex;
-    font-weight: bold;
-    font-size: 1.5em;
-    color: black;
-    padding-left: 0.5em;
-`;
-const Img = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 0.5em;
-`;

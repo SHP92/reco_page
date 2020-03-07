@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Page from './page';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
-import InfiniteScroll from "react-infinite-scroll-component";
+import { Card, Image, Divider, Label, Icon} from 'semantic-ui-react';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
@@ -13,155 +13,95 @@ export default function List() {
     const { menu, country, lang } = useParams();
     const GET_LIST = gql`
         query {
-            GoogleGetApp(myLanguage:"${lang}", searchCountry:"${country}", category: "${menu}") {
+            GoogleGetAppList(language:"${lang}", country:"${country}", category: "${menu}", collection: "top") {
                 googleApp {
                     appId
                     title
                     summary
                     icon
                     scoreText
-                    reviews
                 }
             }
         }
     `
-    const PAGE_ITEMS = 10;
-    const [items, setItems] = useState(Array.from({ length: PAGE_ITEMS }));
-    const [hasMore, setHasMore] = useState(true);
-
     const { loading, error, data } = useQuery(GET_LIST);
     if (loading) return <Page menu={menu} state={true}/>;
     if (error) return <Page menu={menu} state={false}/>;
 
-    const DATA = data.GoogleGetApp.googleApp;
-    const fetchMoreData = () => {
-        if (DATA.length <= items.length) {
-            setHasMore(false);
-            return;
-        }
-        setTimeout(() => {
-            setItems(items.concat(Array.from({ length: PAGE_ITEMS })));
-        }, 1000);
-    };
+    const DATA = data.GoogleGetAppList.googleApp;
 
     return (
         <div>
-            <GlobalStyle />
-            <Header> 
-                {menu.toUpperCase()} 
-                <Link to="/" style={{ textDecoration: 'none' }}/> 
-            </Header>
-            <Body>
-                <InsideBody>
-                    <InfiniteScroll
-                        dataLength={items.length}
-                        next={fetchMoreData}
-                        hasMore={hasMore}
-                        loader={<h4>Loading...</h4>}
-                        endMessage={<b>Yay! You have seen it all</b>}
-                    >
-                        {DATA.map((i, key) => {
-                            if (key < items.length) {
-                                return (
-                                    <Card title={i.title} key={i.appId}>
-                                        <Block to={{
-                                            pathname: `/${menu}/${country}/${lang}/${i.appId}`
-                                        }} style={{ textDecoration: 'none' }}>
-                                            <Contents>
-                                                <Title> {removeTags(i.title)} </Title>
-                                                <Summary> {removeTags(i.summary)} </Summary>
-                                            </Contents>
-                                            <Badge>
-                                                <Icon src={i.icon} alt={i.appId}/>
-                                                <Score> {`⭐️${i.scoreText}`} </Score>
-                                            </Badge>
-                                        </Block>
-                                    </Card>
-                                )
-                            }
-                        })}
-                    </InfiniteScroll>
-                </InsideBody>
-            </Body>
+            <GlobalStyle /> 
+            <Card style={{width:'100%'}}>
+                <Card.Content>
+                    <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}>
+                        <Link to="/" style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
+                            <Image
+                                label={{ 
+                                color: 'teal',
+                                content: 'HOME',
+                                icon: 'home',
+                                ribbon: true, 
+                                size: 'large'}}
+                            />
+                        </Link>
+                        <Icon name={menu} color='grey'/>
+                        <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()} </div>
+                        <Label pointing='left' color='teal' basic> {DATA.length} </Label>
+                    </Card.Header>
+                </Card.Content>
+                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll'}}>
+                    {DATA.map((i, key) => {
+                        return (
+                            <div>
+                                <Link to={{
+                                        pathname: `/${menu}/${country}/${lang}/${i.appId}`
+                                    }} 
+                                    style={{ 
+                                        textDecoration: 'none'
+                                        , display: 'flex'
+                                        , flexDirection: 'row'
+                                        , color: 'black'
+                                    }}
+                                >
+                                    <Contents style={{paddingRight:10}}>
+                                        <Card.Header style={{fontWeight:'bold'}}> {removeTags(i.title)} </Card.Header>
+                                        <Card.Description style={{color:'darkgray', fontSize:12, paddingTop:7}}> 
+                                            {removeTags(i.summary)}
+                                        </Card.Description>
+                                    </Contents>
+                                    <Badge>
+                                        <img src={i.icon} alt={i.appId} 
+                                            style={{borderRadius:'50%', width:50}}
+                                        />
+                                        <Icon name='star' color='yellow' 
+                                            style={{fontSize:12, display:'flex', justifyContent:'center', marginTop:5}}
+                                        >
+                                            <div style={{color:'black'}}> {i.scoreText} </div>
+                                        </Icon>
+                                    </Badge>
+                                </Link>
+                                <Divider />
+                            </div>
+                        )
+                    })}
+                </Card.Content>
+            </Card>
         </div>
     );
 }
 
-const Header = styled.span`
-    display: flex;
-    border: 8px solid #5e6fa3;
-    background-color: white;
-    margin: 1em;
-    margin-bottom: 0.7em;
-    box-shadow: 3px 5px 1px #F79109;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #5e6fa3;
-    padding: 0.5em;
-`;
-const Body = styled.span`
+const Contents = styled.div`
     display: flex;
     flex-direction: column;
-    background-color: white;
-    padding: 0.5em;
-    box-shadow: 3px 5px 1px #F79109;
-    margin-top: 1.5em;
-    margin-right: 1.5em;
-    margin-left: 1.5em;
-    height: 80vh;
-`;
-const InsideBody = styled.div`
-    display: flex;
-    overflow-y: scroll;
-    height: 75vh;
-    /* border: 1px solid black; */
-`;
-const Card = styled.div`
-    display: flex;
-    height: 12vh;
-    border-bottom: 1px solid lightgray;
+    width: 100%;
     /* border: 1px solid red; */
 `;
-const Block = styled(Link)`
-    display: flex;
-    flex-direction: row;
-    padding: 0.6em;
-    width: 100%;
-    /* border: 1px solid blue; */
-    overflow: hidden;
-`;
-const Contents = styled.span`
+const Badge = styled.div`
     display: flex;
     flex-direction: column;
-    width: 80%;
-    overflow-y: hidden;
-    /* border: 1px solid black; */
-`;
-const Title = styled.span`
-    margin-bottom: 0.5em;
-    font-weight: bold;
-    color: black;
-`;
-const Summary = styled.div`
-    font-size: 0.8em;
-    color: darkgray;
-`;
-const Badge = styled.span`
-    display: flex;
-    width: 20%;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    /* border: 1px solid black; */
-`;
-const Score = styled.span`
-    display: flex;
-    font-size: 0.95em;
-`;
-const Icon = styled.img`
-    display: flex;
-    border-radius: 50%;
-    width: 6vh; height: 6vh;
-    margin-bottom: 0.3em;
+    /* border: 1px solid blue; */
 `;

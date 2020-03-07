@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Page from './page';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
+import { Card, Icon, Rating, Accordion, Label, Image } from 'semantic-ui-react';
+import DivideLine from '../divider';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 
 export default function Detail(){
-    const img = process.env.PUBLIC_URL;
     const { menu, country, lang, id } = useParams();
+    const [activeIndex, setActiveIndex] = useState();
     const GET_DETAIL = gql`
         query {
             GoogleGetFullDetail(appId:"${id}", country:"${country}", language:"${lang}"){
@@ -38,133 +40,107 @@ export default function Detail(){
     return (
         <div>
             <GlobalStyle/>
-            <Header>
-                {menu.toUpperCase()}
-            </Header>
-            <Body>
-                <InsideBody>
-                    <Block>
-                        <img src={DATA.icon} alt='icon' style={{width:100, height:100, borderRadius:5}}/>
-                        <Box>
-                            <div style={{fontWeight:'bold'}}> {removeTags(DATA.title)} </div>
-                            <div style={{display:'flex', flexDirection:'column'}}>
-                                <span> ⭐️ {DATA.scoreText} </span>
-                                <span> 🚀 {DATA.installs} </span>
+            <Card style={{width:'100%'}}>
+                <Card.Content>
+                    <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}> 
+                        <Link to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
+                            <Image
+                                label={{ 
+                                color: 'teal',
+                                content: 'LIST',
+                                icon: 'list ul',
+                                ribbon: true, 
+                                size: 'large'}}
+                            />
+                        </Link>
+                        <Icon name={menu} color='grey'/>
+                        <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()}  </div>
+                    </Card.Header>
+                </Card.Content>
+                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+                    <div style={{display:'flex', justifyContent:'space-around'}}>
+                        <img src={DATA.icon} alt='icon' style={{display:'flex', width:100, height:100, borderRadius:5, marginRight:7}}/>
+                        <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
+                            <Card.Header style={{fontWeight:'bold'}}> {removeTags(DATA.title)} </Card.Header>
+                            <div>
+                                <Card.Description style={{display:'flex'}}> 
+                                    <Icon name='star' color='yellow'/>
+                                    <div> {DATA.scoreText}  </div>
+                                </Card.Description>
+                                <Card.Description style={{display:'flex', alignItems:'center'}} onClick={()=>window.open(removeTags(DATA.url), '_blank')}> 
+                                    <Icon name='download' color='grey'/>
+                                    <div> {DATA.installs} </div>
+                                    <Label as='a' basic color='teal' pointing='left' size='small' style={{marginLeft:10}}> 
+                                        DOWNLOAD
+                                    </Label>
+                                </Card.Description>
                             </div>
-                        </Box>
-                    </Block>
-                    <Line/>
-                    <Block>
-                        <div>
-                            <div style={{marginBottom: 5, fontSize: 14}}> {removeTags(DATA.summary)} </div>
-                            {/* <Desc> {desc.split('\r').map((i, key) => (
-                                <div key={key}>{i}</div>
-                            ))} </Desc> */}
                         </div>
-                    </Block>
-                    <Block>
-                        <Comments>
+                    </div>
+                    <div style={{display:'flex', flex:1, flexDirection:'column'}}>
+                        { DivideLine('tag', 'grey', 'description', 'grey') }
+                        <div style={{marginBottom: 5, fontSize: 14}}> {removeTags(DATA.summary)} </div>
+                        <Accordion>
+                            <Accordion.Title
+                                active={activeIndex === 0}
+                                index={0}
+                                onClick={(e, titleProps) => {
+                                    const { index } = titleProps
+                                    const newIndex = activeIndex === index ? -1 : index
+                                    setActiveIndex(newIndex)
+                                }}
+                            >
+                            <Icon name='dropdown' />
+                            What is a dog?
+                            </Accordion.Title>
+                            <Accordion.Content active={activeIndex === 0}>
+                                <p>
+                                    A dog is a type of domesticated animal. Known for its loyalty and
+                                    faithfulness, it can be found as a welcome guest in many households
+                                    across the world.
+                                </p>
+                            </Accordion.Content>
+                        </Accordion>
+                        {/* <Desc> {desc.split('\r').map((i, key) => (
+                            <div key={key}>{i}</div>
+                        ))} </Desc> */}
+                    </div>
+                    <div style={{display:'flex', flex:2, flexDirection:'column', paddingBottom:20}}>
+                        { DivideLine('comments', 'grey', 'reviews', 'grey') }
+                        <div style={{display:'flex', flexDirection:'column', overflowY:'scroll', height:document.body.clientHeight*0.5}}>
                             {COMMENT.map(i => (
                                 <Comment>
-                                    <Info>
-                                        <div style={{display:'flex', flexDirection:'row'}}>
-                                            <img src={`${img}images/chat.png`} alt={i} style={{ width:20, paddingRight:7}}/>
-                                            <span style={{paddingRight:7, fontWeight:'bold'}}> {i.userName.substring(0,10)} </span>
-                                        </div>
-                                        <span> 👍 {i.thumbsUp}</span>
-                                    </Info>
-                                    <div style={{backgroundColor:'#F4F4FF', padding:5}}> 
-                                        <div style={{display:'flex', fontSize:12, justifyContent:'space-between'}}>
-                                            <div> 
-                                                {Array.from({length: Number(i.scoreText)}).map(i=>(
-                                                    '⭐️'
-                                                ))}
-                                            </div>
-                                            <div style={{color:'darkgrey'}}> {i.date.split('T')[0]} </div>
-                                        </div>
-                                        {(i.text.length > 150) ? `${i.text.substring(0,150)}...` :  i.text} 
+                                    <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
+                                        <Label image>
+                                            <img src={i.userImage} />
+                                            {i.userName.substring(0,10)}
+                                            <Label.Detail>
+                                                <Icon name='heart' color='red'/> 
+                                                {i.thumbsUp}
+
+                                            </Label.Detail>
+                                        </Label>
+                                        <Rating defaultRating={Number(i.scoreText)} maxRating={5} icon='star' disabled size='tiny'/>
+                                    </div>
+                                    <div style={{padding:5}}> 
+                                        {i.text} 
+                                        <div style={{color:'darkgrey', fontSize:12, textAlign:'right'}}> {i.date.split('T')[0]} </div>
                                     </div>
                                 </Comment>
                             ))}
-                        </Comments>
-                    </Block>
-                    {/* <Block>
-                        <Write>
-                            my review ✏️ 
-                        </Write>
-                    </Block> */}
-                    <Block>
-                        <List to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none' }}>
-                            🎁 list
-                        </List>
-                        <Download onClick={()=>window.open(removeTags(DATA.url), '_blank')}>
-                            download 🚀
-                        </Download>
-                    </Block>
-                </InsideBody>
-            </Body>
+                        </div>
+                    </div>
+                </Card.Content>
+            </Card>
         </div>
     );
 }
 
-const Header = styled.span`
-    display: flex;
-    border: 8px solid #5e6fa3;
-    background-color: white;
-    margin: 1em;
-    margin-bottom: 0.7em;
-    box-shadow: 3px 5px 1px #F79109;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: bold;
-    color: #5e6fa3;
-    padding: 0.5em;
-`;
-const Body = styled.span`
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-    padding: 0.5em;
-    box-shadow: 3px 5px 1px #F79109;
-    margin-top: 1.5em;
-    margin-right: 1.5em;
-    margin-left: 1.5em;
-    height: 80vh;
-`;
-const InsideBody = styled.div`
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-    height: 75vh;
-    /* border: 1px solid black; */
-`;
-const Block = styled.span`
-    display: flex;
-    justify-content: center;
-`;
-const Box = styled.span`
-    display : flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-left: 0.5em;
-    width: 70vw;
-`;
 const Desc = styled.div`
     font-size: 0.9em;
     padding: 0.5em;
     line-height: 1.5em;
     background: rgba(254, 208, 110, 0.5);
-`;
-const Comments = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    border: 1px solid lightgray;
-    overflow-y: scroll;
-    height: 40vh;
-    padding: 0.5em;
-    padding-top: 0;
 `;
 const Comment = styled.div`
     display: flex;
@@ -176,48 +152,3 @@ const Comment = styled.div`
     padding-top: 0.5em;
     border-bottom: 1px solid lightgray;
 `;
-const Info = styled.div`
-    display: flex;
-    flex-direction: row;
-    padding-bottom: 0.5em;
-    justify-content: space-between;
-`;
-const Button = styled.div`
-    justify-content: center;
-    align-items: center;
-    height: 6vh;
-    font-size: 1.2em;
-    font-weight: bold;
-    margin-top: 0.5em;
-`;
-const Write = styled(Button)`
-    display: inline-flexbox;
-    width: 100vw;
-    color: #F79109;
-    border: 5px solid #F79109;
-`;
-const Download = styled(Button)`
-    display: flex;
-    width: 50vw;
-    border: 5px solid #F79109;
-    margin-left: 0.2em;
-    color: #F79109;
-`;
-const List = styled(Link)`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 6vh;
-    width: 50vw;
-    border:5px solid #5e6fa3;
-    margin-right: 0.2em;
-    font-size: 1.2em;
-    color: #5e6fa3;
-    font-weight: bold;
-    margin-top: 0.5em;
-`;
-const Line = styled.div`
-    border-top: 1px solid lightgray;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-`
