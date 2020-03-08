@@ -1,6 +1,5 @@
 export const COUNTRY = [
   {text: 'Afghanistan', value: 'AF', key: 'AF', flag: 'AF'.toLowerCase()},
-  {text: 'Åland Islands', value: 'AX', key: 'AX', flag: 'AX'.toLowerCase()},
   {text: 'Albania', value: 'AL', key: 'AL', flag: 'AL'.toLowerCase()},
   {text: 'Algeria', value: 'DZ', key: 'DZ', flag: 'DZ'.toLowerCase()},
   {text: 'American Samoa', value: 'AS', key: 'AS', flag: 'AS'.toLowerCase()},
@@ -246,3 +245,8 @@ export const LANG = {
     , "CHINESE" : 'zh-han'
     , "JAPANESE" : 'ja'
 };
+export const MENU = [
+  {text: 'food & drink', key: 'food', value: 'food', icon: 'food'},
+  {text: 'map & transport', key: 'map', value: 'map', icon: 'map marker alternate'},
+  {text: 'travel info', key: 'travel', value: 'travel', icon: 'info circle'},
+]

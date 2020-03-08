@@ -4,27 +4,53 @@ import styled from 'styled-components';
 import Page from './page';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
-import { Card, Icon, Rating, Accordion, Label, Image } from 'semantic-ui-react';
+import { Card, Icon, Rating, Accordion, Label, Image, Tab } from 'semantic-ui-react';
 import DivideLine from '../divider';
+import { MENU } from '../info';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 
 export default function Detail(){
     const { menu, country, lang, id } = useParams();
-    const [activeIndex, setActiveIndex] = useState();
-    const GET_DETAIL = gql`
+    const key = Object.keys(MENU).filter(i => MENU[i].value === menu);
+    const text = MENU[key].text;
+    const icon = MENU[key].icon;
+    const [activeIndex, setActiveIndex] = useState(-1);
+
+    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const GET_DETAIL = iOS ? 
+        gql`
+        query {
+            AppleGetFullDetail(appId:"${id}", country:"${country}"){
+                appleApp{
+                    title
+                    # installs
+                    reviews
+                    score
+                    icon
+                    url
+                    # summary
+                    description
+                    comments
+                    screenshots
+                }
+            }
+        }
+    ` 
+        : gql`
         query {
             GoogleGetFullDetail(appId:"${id}", country:"${country}", language:"${lang}"){
                 googleApp{
                     title
                     installs
-                    scoreText
+                    score
                     icon
                     url
                     summary
                     description
                     comments
+                    screenshots
                 }
             }
         }
@@ -33,9 +59,33 @@ export default function Detail(){
     if (loading) return <Page menu={menu} state={true}/>;
     if (error) return <Page menu={menu} state={false}/>;
 
-    const DATA = data.GoogleGetFullDetail.googleApp;
+    const DATA = iOS ? data.AppleGetFullDetail.appleApp : data.GoogleGetFullDetail.googleApp;
     const COMMENT = JSON.parse(DATA.comments);
-    const desc = (DATA.description.length > 250) ? `${removeTags(DATA.description).substring(0,250)}...` : removeTags(DATA.description)
+
+    const PANE = [
+        {
+            menuItem: {icon: 'picture'}
+            , render: () => (
+                <Tab.Pane style={{display:'flex', overflowX:'scroll'}}>
+                    {DATA.screenshots.map(i => (
+                        <div>
+                            <img src={i} width={150}/>
+                        </div>
+                    ))}
+                </Tab.Pane>
+            )
+        },
+        {
+            menuItem: {icon: 'content'}
+            , render: () => (
+                <Tab.Pane> 
+                    {removeTags(DATA.description).split('\r').map((i, key) => (
+                        <div key={key}>{i}</div>
+                    ))}
+                </Tab.Pane>
+            )
+        }
+    ];
 
     return (
         <div>
@@ -46,18 +96,18 @@ export default function Detail(){
                         <Link to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
                             <Image
                                 label={{ 
-                                color: 'teal',
+                                color: 'blue',
                                 content: 'LIST',
                                 icon: 'list ul',
                                 ribbon: true, 
                                 size: 'large'}}
                             />
                         </Link>
-                        <Icon name={menu} color='grey'/>
-                        <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()}  </div>
+                        <Icon name={icon} color='grey'/>
+                        {/* <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()}  </div> */}
                     </Card.Header>
                 </Card.Content>
-                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+                <Card.Content style={{height:document.body.clientHeight*0.95, display:'flex', flexDirection:'column', overflow:'hidden'}}>
                     <div style={{display:'flex', justifyContent:'space-around'}}>
                         <img src={DATA.icon} alt='icon' style={{display:'flex', width:100, height:100, borderRadius:5, marginRight:7}}/>
                         <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
@@ -65,12 +115,12 @@ export default function Detail(){
                             <div>
                                 <Card.Description style={{display:'flex'}}> 
                                     <Icon name='star' color='yellow'/>
-                                    <div> {DATA.scoreText}  </div>
+                                    <div> {DATA.score.toFixed(1)}  </div>
                                 </Card.Description>
                                 <Card.Description style={{display:'flex', alignItems:'center'}} onClick={()=>window.open(removeTags(DATA.url), '_blank')}> 
                                     <Icon name='download' color='grey'/>
                                     <div> {DATA.installs} </div>
-                                    <Label as='a' basic color='teal' pointing='left' size='small' style={{marginLeft:10}}> 
+                                    <Label as='a' basic color='blue' pointing='left' size='small' style={{marginLeft:10}}> 
                                         DOWNLOAD
                                     </Label>
                                 </Card.Description>
@@ -79,7 +129,6 @@ export default function Detail(){
                     </div>
                     <div style={{display:'flex', flex:1, flexDirection:'column'}}>
                         { DivideLine('tag', 'grey', 'description', 'grey') }
-                        <div style={{marginBottom: 5, fontSize: 14}}> {removeTags(DATA.summary)} </div>
                         <Accordion>
                             <Accordion.Title
                                 active={activeIndex === 0}
@@ -90,24 +139,34 @@ export default function Detail(){
                                     setActiveIndex(newIndex)
                                 }}
                             >
-                            <Icon name='dropdown' />
-                            What is a dog?
+                                <div style={{marginBottom: 5, fontSize: 14}}> 
+                                    {removeTags(DATA.summary)}
+                                    <Label style={{marginLeft:10, marginTop:5}} horizontal> 
+                                        {(activeIndex===-1) ? 
+                                            <div>
+                                                more 
+                                                <Icon name='plus' style={{marginLeft:5}}/> 
+                                            </div>
+                                            : <Icon name='angle double up' style={{marginLeft:5}}/>
+                                        }
+                                    </Label>
+                                </div>
                             </Accordion.Title>
-                            <Accordion.Content active={activeIndex === 0}>
-                                <p>
-                                    A dog is a type of domesticated animal. Known for its loyalty and
-                                    faithfulness, it can be found as a welcome guest in many households
-                                    across the world.
-                                </p>
+                            <Accordion.Content 
+                                active={activeIndex === 0} 
+                                style={{overflowX:'hidden', overflowY:'scroll', height:document.body.clientHeight*0.5, marginRight:-50, paddingRight:50}}
+                            >
+                                <Tab 
+                                    menu={{ secondary: true }}
+                                    panes={PANE}
+                                    style={{marginLeft:10}}
+                                />
                             </Accordion.Content>
                         </Accordion>
-                        {/* <Desc> {desc.split('\r').map((i, key) => (
-                            <div key={key}>{i}</div>
-                        ))} </Desc> */}
                     </div>
-                    <div style={{display:'flex', flex:2, flexDirection:'column', paddingBottom:20}}>
+                    <div style={{display:'flex', flex:2, flexDirection:'column', paddingBottom:20}} onClick={()=>setActiveIndex(-1)}>
                         { DivideLine('comments', 'grey', 'reviews', 'grey') }
-                        <div style={{display:'flex', flexDirection:'column', overflowY:'scroll', height:document.body.clientHeight*0.5}}>
+                        <div style={{display:'flex', flexDirection:'column', overflowY:'scroll', height:document.body.clientHeight*0.5, marginRight:-50, paddingRight:50}}>
                             {COMMENT.map(i => (
                                 <Comment>
                                     <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
@@ -117,7 +176,6 @@ export default function Detail(){
                                             <Label.Detail>
                                                 <Icon name='heart' color='red'/> 
                                                 {i.thumbsUp}
-
                                             </Label.Detail>
                                         </Label>
                                         <Rating defaultRating={Number(i.scoreText)} maxRating={5} icon='star' disabled size='tiny'/>
@@ -136,12 +194,6 @@ export default function Detail(){
     );
 }
 
-const Desc = styled.div`
-    font-size: 0.9em;
-    padding: 0.5em;
-    line-height: 1.5em;
-    background: rgba(254, 208, 110, 0.5);
-`;
 const Comment = styled.div`
     display: flex;
     flex-direction: column;

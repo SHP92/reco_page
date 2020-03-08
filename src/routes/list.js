@@ -4,14 +4,34 @@ import styled from 'styled-components';
 import Page from './page';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
-import { Card, Image, Divider, Label, Icon} from 'semantic-ui-react';
+import { Card, Image, Divider, Label, Icon, Button} from 'semantic-ui-react';
+import { MENU } from '../info';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 
 export default function List() {
     const { menu, country, lang } = useParams();
-    const GET_LIST = gql`
+    const key = Object.keys(MENU).filter(i => MENU[i].value === menu);
+    const text = MENU[key].text;
+    const icon = MENU[key].icon;
+
+    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const GET_LIST = iOS ? 
+        gql`
+        query {
+            AppleGetAppList(country:"${country}", category: "${menu}", collection: "top") {
+                appleApp {
+                    appId
+                    title
+                    description
+                    icon
+                    score
+                }
+            }
+        }
+        ` 
+        : gql`
         query {
             GoogleGetAppList(language:"${lang}", country:"${country}", category: "${menu}", collection: "top") {
                 googleApp {
@@ -28,7 +48,7 @@ export default function List() {
     if (loading) return <Page menu={menu} state={true}/>;
     if (error) return <Page menu={menu} state={false}/>;
 
-    const DATA = data.GoogleGetAppList.googleApp;
+    const DATA = iOS ? data.AppleGetAppList.appleApp : data.GoogleGetAppList.googleApp;
 
     return (
         <div>
@@ -39,16 +59,16 @@ export default function List() {
                         <Link to="/" style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
                             <Image
                                 label={{ 
-                                color: 'teal',
+                                color: 'blue',
                                 content: 'HOME',
                                 icon: 'home',
                                 ribbon: true, 
                                 size: 'large'}}
                             />
                         </Link>
-                        <Icon name={menu} color='grey'/>
-                        <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()} </div>
-                        <Label pointing='left' color='teal' basic> {DATA.length} </Label>
+                        <Icon name={icon} color='grey'/>
+                        {/* <div style={{marginRight:5, marginLeft:3}}> {text.toUpperCase()} </div> */}
+                        <Label pointing='left' color='blue' basic> {DATA.length} </Label>
                     </Card.Header>
                 </Card.Content>
                 <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll'}}>
@@ -68,18 +88,33 @@ export default function List() {
                                     <Contents style={{paddingRight:10}}>
                                         <Card.Header style={{fontWeight:'bold'}}> {removeTags(i.title)} </Card.Header>
                                         <Card.Description style={{color:'darkgray', fontSize:12, paddingTop:7}}> 
-                                            {removeTags(i.summary)}
+                                            {iOS ? `${removeTags(i.description).substring(0,150)}...` : removeTags(i.summary)}
                                         </Card.Description>
                                     </Contents>
                                     <Badge>
                                         <img src={i.icon} alt={i.appId} 
                                             style={{borderRadius:'50%', width:50}}
                                         />
-                                        <Icon name='star' color='yellow' 
-                                            style={{fontSize:12, display:'flex', justifyContent:'center', marginTop:5}}
-                                        >
-                                            <div style={{color:'black'}}> {i.scoreText} </div>
-                                        </Icon>
+                                        { iOS ? 
+                                            <div>
+                                                {(key < 3) ?
+                                                    <Button labelPosition='right' as='div' size='mini' style={{marginTop:5}}>
+                                                        <Button size='mini' basic>
+                                                            <Icon name='trophy' color='yellow'/>
+                                                        </Button>
+                                                        <Label size='mini' pointing='left'>
+                                                            {key+1}
+                                                        </Label>
+                                                    </Button>
+                                                    : null
+                                                }
+                                            </div>
+                                            : <Icon name='star' color='yellow' 
+                                                style={{fontSize:12, display:'flex', justifyContent:'center', marginTop:5}}
+                                            >
+                                                <div style={{color:'black'}}> {i.scoreText} </div>
+                                            </Icon>
+                                        }
                                     </Badge>
                                 </Link>
                                 <Divider />
