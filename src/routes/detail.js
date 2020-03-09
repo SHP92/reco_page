@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Page from './page';
+import PageUp from '../pageUp';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
-import { Card, Icon, Rating, Accordion, Label, Image, Tab, CardContent, Button } from 'semantic-ui-react';
+import { Card, Icon, Rating, Accordion, Label, Image, Tab} from 'semantic-ui-react';
 import DivideLine from '../divider';
 import { MENU } from '../info';
 
@@ -60,7 +61,7 @@ export default function Detail(){
     if (error) return <Page menu={menu} state={false}/>;
 
     const DATA = iOS ? data.AppleGetFullDetail.appleApp : data.GoogleGetFullDetail.googleApp;
-    const COMMENT = JSON.parse(DATA.comments);
+    let COMMENT = JSON.parse(DATA.comments);
 
     const PANE = [
         {
@@ -96,9 +97,7 @@ export default function Detail(){
 
             <GlobalStyle/>
             <Card style={{width:'100%', overflowX:'hidden'}}>
-                <div style={{position:'absolute', zIndex:10, right:10, top:document.body.clientHeight*0.9}}>
-                    <Button circular primary icon='angle double up' size='massive' onClick={()=>document.getElementById('contents').scroll(0,0)}/>
-                </div>
+                <PageUp />
                 <Card.Content>
                     <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}> 
                         <Link to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
@@ -115,6 +114,7 @@ export default function Detail(){
                         {/* <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()}  </div> */}
                     </Card.Header>
                 </Card.Content>
+                
                 <Card.Content style={{display:'flex', flexDirection:'column'}}>
                     <div style={{display:'flex', justifyContent:'space-around'}}>
                         <img src={DATA.icon} alt='icon' style={{display:'flex', width:100, height:100, borderRadius:5, marginRight:7}}/>
@@ -126,8 +126,16 @@ export default function Detail(){
                                     <div> {DATA.score.toFixed(1)}  </div>
                                 </Card.Description>
                                 <Card.Description style={{display:'flex', alignItems:'center'}} onClick={()=>window.open(removeTags(DATA.url), '_blank')}> 
-                                    <Icon name='download' color='grey'/>
-                                    <div> {DATA.installs} </div>
+                                    {iOS ? 
+                                        <div style={{display: 'flex'}}>
+                                            <Icon name='comment alternate' color='grey'/>
+                                            <div> {DATA.reviews.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} </div>
+                                        </div> :
+                                        <div style={{display:'flex'}}>
+                                            <Icon name='download' color='grey'/>
+                                            <div> {DATA.installs} </div>
+                                        </div>
+                                    }
                                     <Label as='a' basic color='blue' pointing='left' size='small' style={{marginLeft:10}}> 
                                         DOWNLOAD
                                     </Label>
@@ -136,6 +144,7 @@ export default function Detail(){
                         </div>
                     </div>
                 </Card.Content>
+
                 <Card.Content id='contents' style={{height:document.body.clientHeight*0.85, overflowX:'hidden', marginRight:-50, paddingRight:50}}>
                     <div style={{display:'flex', flex:1, flexDirection:'column'}}>
                         { DivideLine('tag', 'grey', 'description', 'grey') }
@@ -150,7 +159,9 @@ export default function Detail(){
                                 }}
                             >
                                 <div style={{marginBottom: 5, fontSize: 14}}> 
-                                    {removeTags(DATA.summary)}
+                                    {iOS ? `${removeTags(DATA.description).substring(0,100)}...` 
+                                        : removeTags(DATA.summary)
+                                    }
                                     <Label style={{marginLeft:10, marginTop:5}} horizontal> 
                                         {(activeIndex===-1) ? 
                                             <div>
@@ -180,19 +191,23 @@ export default function Detail(){
                             {COMMENT.map(i => (
                                 <Comment>
                                     <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
-                                        <Label image>
-                                            <img src={i.userImage} />
-                                            {i.userName.substring(0,10)}
-                                            <Label.Detail>
-                                                <Icon name='heart' color='red'/> 
-                                                {i.thumbsUp}
-                                            </Label.Detail>
-                                        </Label>
-                                        <Rating defaultRating={Number(i.scoreText)} maxRating={5} icon='star' disabled size='tiny'/>
+                                        {iOS ? <Label> {i.userName.substring(0,10)} </Label> :
+                                            <Label image>
+                                                <img src={i.userImage} />
+                                                {i.userName.substring(0,10)}
+                                                <Label.Detail>
+                                                    <Icon name='heart' color='red'/> 
+                                                    {i.thumbsUp}
+                                                </Label.Detail>
+                                            </Label>
+                                        }
+                                        <Rating defaultRating={Number(i.score)} maxRating={5} icon='star' disabled size='tiny'/>
                                     </div>
                                     <div style={{padding:5, lineHeight:1.8}}> 
                                         {i.text} 
-                                        <div style={{color:'darkgrey', fontSize:12, textAlign:'right', lineHeight:0.5}}> {i.date.split('T')[0]} </div>
+                                        <div style={{color:'darkgrey', fontSize:12, textAlign:'right', lineHeight:1.0}}> 
+                                            {iOS ? null : i.date.split('T')[0]} 
+                                        </div>
                                     </div>
                                 </Comment>
                             ))}

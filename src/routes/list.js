@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Page from './page';
+import PageUp from '../pageUp';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
 import { Card, Image, Divider, Label, Icon, Button} from 'semantic-ui-react';
@@ -52,8 +53,9 @@ export default function List() {
 
     return (
         <div>
-            <GlobalStyle /> 
+            <GlobalStyle />
             <Card style={{width:'100%', overflowX:'hidden'}}>
+                <PageUp />
                 <Card.Content>
                     <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <Link to="/" style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
@@ -71,7 +73,8 @@ export default function List() {
                         <Label pointing='left' color='blue' basic> {DATA.length} </Label>
                     </Card.Header>
                 </Card.Content>
-                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll', marginRight:-50, paddingRight:50}}>
+
+                <Card.Content id='contents' style={{height:document.body.clientHeight*0.95, overflowY:'scroll', marginRight:-50, paddingRight:50}}>
                     {DATA.map((i, key) => {
                         return (
                             <div>
@@ -85,12 +88,6 @@ export default function List() {
                                         , color: 'black'
                                     }}
                                 >
-                                    <Contents style={{paddingRight:10}}>
-                                        <Card.Header style={{fontWeight:'bold'}}> {removeTags(i.title)} </Card.Header>
-                                        <Card.Description style={{color:'darkgray', fontSize:12, paddingTop:7}}> 
-                                            {iOS ? `${removeTags(i.description).substring(0,150)}...` : removeTags(i.summary)}
-                                        </Card.Description>
-                                    </Contents>
                                     <Badge>
                                         <img src={i.icon} alt={i.appId} 
                                             style={{borderRadius:'50%', width:50}}
@@ -116,6 +113,12 @@ export default function List() {
                                             </Icon>
                                         }
                                     </Badge>
+                                    <Contents style={{paddingLeft:10}}>
+                                        <Card.Header style={{fontWeight:'bold'}}> {removeTags(i.title)} </Card.Header>
+                                        <Card.Description style={{color:'darkgray', fontSize:12, paddingTop:7}}> 
+                                            {iOS ? `${removeTags(i.description).substring(0,150)}...` : removeTags(i.summary)}
+                                        </Card.Description>
+                                    </Contents>
                                 </Link>
                                 <Divider />
                             </div>
