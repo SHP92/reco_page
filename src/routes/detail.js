@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import Page from './page';
 import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
-import { Card, Icon, Rating, Accordion, Label, Image, Tab } from 'semantic-ui-react';
+import { Card, Icon, Rating, Accordion, Label, Image, Tab, CardContent, Button } from 'semantic-ui-react';
 import DivideLine from '../divider';
 import { MENU } from '../info';
 
@@ -67,11 +67,15 @@ export default function Detail(){
             menuItem: {icon: 'picture'}
             , render: () => (
                 <Tab.Pane style={{display:'flex', overflowX:'scroll'}}>
-                    {DATA.screenshots.map(i => (
-                        <div>
-                            <img src={i} width={150}/>
-                        </div>
-                    ))}
+                    {DATA.screenshots.map((i,key) => {
+                        if(key < 5){
+                            return (
+                                <div>
+                                    <img src={i} width={150}/>
+                                </div>
+                            )
+                        }
+                    })}
                 </Tab.Pane>
             )
         },
@@ -89,8 +93,12 @@ export default function Detail(){
 
     return (
         <div>
+
             <GlobalStyle/>
-            <Card style={{width:'100%'}}>
+            <Card style={{width:'100%', overflowX:'hidden'}}>
+                <div style={{position:'absolute', zIndex:10, right:10, top:document.body.clientHeight*0.9}}>
+                    <Button circular primary icon='angle double up' size='massive' onClick={()=>document.getElementById('contents').scroll(0,0)}/>
+                </div>
                 <Card.Content>
                     <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}> 
                         <Link to={`/${menu}/${country}/${lang}`} style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
@@ -107,7 +115,7 @@ export default function Detail(){
                         {/* <div style={{marginRight:5, marginLeft:5}}> {menu.toUpperCase()}  </div> */}
                     </Card.Header>
                 </Card.Content>
-                <Card.Content style={{height:document.body.clientHeight*0.95, display:'flex', flexDirection:'column', overflow:'hidden'}}>
+                <Card.Content style={{display:'flex', flexDirection:'column'}}>
                     <div style={{display:'flex', justifyContent:'space-around'}}>
                         <img src={DATA.icon} alt='icon' style={{display:'flex', width:100, height:100, borderRadius:5, marginRight:7}}/>
                         <div style={{display:'flex', flexDirection:'column', justifyContent:'space-around'}}>
@@ -127,6 +135,8 @@ export default function Detail(){
                             </div>
                         </div>
                     </div>
+                </Card.Content>
+                <Card.Content id='contents' style={{height:document.body.clientHeight*0.85, overflowX:'hidden', marginRight:-50, paddingRight:50}}>
                     <div style={{display:'flex', flex:1, flexDirection:'column'}}>
                         { DivideLine('tag', 'grey', 'description', 'grey') }
                         <Accordion>
@@ -154,7 +164,7 @@ export default function Detail(){
                             </Accordion.Title>
                             <Accordion.Content 
                                 active={activeIndex === 0} 
-                                style={{overflowX:'hidden', overflowY:'scroll', height:document.body.clientHeight*0.5, marginRight:-50, paddingRight:50}}
+                                style={{overflowX:'hidden', marginRight:-50, paddingRight:50}}
                             >
                                 <Tab 
                                     menu={{ secondary: true }}
@@ -166,7 +176,7 @@ export default function Detail(){
                     </div>
                     <div style={{display:'flex', flex:2, flexDirection:'column', paddingBottom:20}} onClick={()=>setActiveIndex(-1)}>
                         { DivideLine('comments', 'grey', 'reviews', 'grey') }
-                        <div style={{display:'flex', flexDirection:'column', overflowY:'scroll', height:document.body.clientHeight*0.5, marginRight:-50, paddingRight:50}}>
+                        <div style={{display:'flex', flexDirection:'column', marginRight:-50, paddingRight:50}}>
                             {COMMENT.map(i => (
                                 <Comment>
                                     <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
@@ -180,9 +190,9 @@ export default function Detail(){
                                         </Label>
                                         <Rating defaultRating={Number(i.scoreText)} maxRating={5} icon='star' disabled size='tiny'/>
                                     </div>
-                                    <div style={{padding:5}}> 
+                                    <div style={{padding:5, lineHeight:1.8}}> 
                                         {i.text} 
-                                        <div style={{color:'darkgrey', fontSize:12, textAlign:'right'}}> {i.date.split('T')[0]} </div>
+                                        <div style={{color:'darkgrey', fontSize:12, textAlign:'right', lineHeight:0.5}}> {i.date.split('T')[0]} </div>
                                     </div>
                                 </Comment>
                             ))}

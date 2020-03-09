@@ -4,6 +4,7 @@ import GlobalStyle from '../gloablstyle';
 import { COUNTRY, LANG, MENU } from '../info';
 import { Dropdown, Step, Icon, Button, Label, Accordion } from 'semantic-ui-react';
 import 'semantic-ui-css/semantic.min.css';
+import getGeoLocation from '../getGeoLocation'
 
 export default function Home(){
     const [country, setCountry] = useState(COUNTRY[0].value);
@@ -16,7 +17,7 @@ export default function Home(){
         setActiveIndex(newIndex)
     }
 
-    return (
+    return (        
         <div>
             <GlobalStyle/>
             <div>

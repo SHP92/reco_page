@@ -11,6 +11,7 @@ const GlobalStyle = createGlobalStyle`
         }
         font-family: 'Nanum Gothic';
         overflow-y: hidden;
+        overflow-x: hidden;
         line-height: 1.2em;
         /* padding: 3em; */
     }

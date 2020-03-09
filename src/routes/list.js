@@ -53,7 +53,7 @@ export default function List() {
     return (
         <div>
             <GlobalStyle /> 
-            <Card style={{width:'100%'}}>
+            <Card style={{width:'100%', overflowX:'hidden'}}>
                 <Card.Content>
                     <Card.Header style={{ display:'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <Link to="/" style={{ textDecoration: 'none', position:'absolute', left:-3, top:-5}}>
@@ -71,7 +71,7 @@ export default function List() {
                         <Label pointing='left' color='blue' basic> {DATA.length} </Label>
                     </Card.Header>
                 </Card.Content>
-                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll'}}>
+                <Card.Content style={{height:document.body.clientHeight*0.95, overflowY:'scroll', marginRight:-50, paddingRight:50}}>
                     {DATA.map((i, key) => {
                         return (
                             <div>

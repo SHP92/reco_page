@@ -4,7 +4,9 @@ import Home from './routes/home';
 import List from './routes/list';
 import Detail from './routes/detail';
 
+
 function App() {
+  
   return (
     <HashRouter>
       <div>
