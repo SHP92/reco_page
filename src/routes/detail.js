@@ -8,22 +8,23 @@ import GlobalStyle from '../gloablstyle';
 import { Card, Icon, Rating, Accordion, Label, Image, Tab} from 'semantic-ui-react';
 import DivideLine from '../divider';
 import { MENU } from '../info';
+import { iOS } from '../iOS';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 
 export default function Detail(){
-    const { menu, country, lang, id } = useParams();
+    const { menu, country, lang, id } = useParams(); //iOS에서는 lang=myCountry
+    
     const key = Object.keys(MENU).filter(i => MENU[i].value === menu);
     const text = MENU[key].text;
     const icon = MENU[key].icon;
     const [activeIndex, setActiveIndex] = useState(-1);
 
-    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const GET_DETAIL = iOS ? 
         gql`
         query {
-            AppleGetFullDetail(appId:"${id}", country:"${country}"){
+            AppleGetFullDetail(appId:"${id}", country:"${lang}"){
                 appleApp{
                     title
                     # installs

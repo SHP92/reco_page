@@ -7,21 +7,22 @@ import removeTags from '../removeTags';
 import GlobalStyle from '../gloablstyle';
 import { Card, Image, Divider, Label, Icon, Button} from 'semantic-ui-react';
 import { MENU } from '../info';
+import { iOS } from '../iOS';
 
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 
 export default function List() {
-    const { menu, country, lang } = useParams();
+    const { menu, country, lang } = useParams(); //iOS에서는 lang=myCountry
+
     const key = Object.keys(MENU).filter(i => MENU[i].value === menu);
     const text = MENU[key].text;
     const icon = MENU[key].icon;
 
-    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const GET_LIST = iOS ? 
         gql`
         query {
-            AppleGetAppList(country:"${country}", category: "${menu}", collection: "top") {
+            AppleGetAppList(searchCountry:"${country}", myCountry:"${lang}", category: "${menu}", collection: "top") {
                 appleApp {
                     appId
                     title
@@ -89,7 +90,7 @@ export default function List() {
                                     }}
                                 >
                                     <Badge>
-                                        <img src={i.icon} alt={i.appId} 
+                                        <img src={i.icon} alt={key} 
                                             style={{borderRadius:'50%', width:50}}
                                         />
                                         { iOS ? 
